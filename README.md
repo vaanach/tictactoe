@@ -24,3 +24,11 @@ This is a simple two-player Tic Tac Toe game built using HTML and CSS.
 3. Enter both players’ names when prompted.
 4. Start playing.
 ## Game Rule
+- The game is played between two players.
+- Players take turns placing their symbol on the board.
+- A player wins if three of their symbols appear in a straight line (horizontal, vertical or diagonal).
+- If all squares are filled and no player wins, the game declares a tie.
+## ✨ Future Improvements
+- make it more visually apealing
+- add a scoring system for mutiple rounds
+- add an intro window 
