@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>title</title>
+    <link rel="stylesheet" href="toe.css">
+    <style>
+      #modal {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        width: 100vw; height: 100vh;
+        background: rgba(0,0,0,0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      }
+      #modal form {
+        background: #fff;
+        padding: 2rem 2.5rem;
+        border-radius: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 1.2rem;
+        min-width: 300px;
+        box-shadow: 0 2px 16px rgba(0,0,0,0.2);
+        align-items: center;
+      }
+      #modal label {
+        font-size: 1.1rem;
+        margin-bottom: 0.2rem;
+      }
+      #modal input {
+        font-size: 1.1rem;
+        padding: 0.4rem 0.7rem;
+        border-radius: 6px;
+        border: 1px solid #aaa;
+        width: 200px;
+      }
+      #modal button {
+        margin-top: 1rem;
+        font-size: 1.1rem;
+        padding: 0.5rem 1.5rem;
+        border-radius: 6px;
+        border: none;
+        background: #333;
+        color: #fff;
+        cursor: pointer;
+      }
+      .game-buttons {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+        margin-top: 24px;
+      }
+    </style>
+</head>
+<body>
+    <div id="modal">
+      <form id="playerForm" autocomplete="off">
+        <label for="p1input">Player 1 name</label>
+        <input id="p1input" name="p1" required placeholder="Player 1" />
+        <label for="p2input">Player 2 name</label>
+        <input id="p2input" name="p2" required placeholder="Player 2" />
+        <button type="submit">Play</button>
+      </form>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center;">
+      <h1 id="winner" style="display:none;"> </h1>
+      <div class="tic-tac-toe">
+        <button class="cell"></button>
+        <button class="cell"></button>
+        <button class="cell"></button>
+        <button class="cell"></button>
+        <button class="cell"></button>
+        <button class="cell"></button>
+        <button class="cell"></button>
+        <button class="cell"></button>
+        <button class="cell"></button>
+      </div>
+      <div class="game-buttons">
+        <button id="restart" style="display:none;">Restart</button>
+        <button id="newgame" style="display:none;">New Game</button>
+      </div>
+    </div>
+    <script>
+      const cells = Array.from(document.querySelectorAll('.tic-tac-toe .cell'));
+      const winnerH1 = document.getElementById('winner');
+      const restartBtn = document.getElementById('restart');
+      const newGameBtn = document.getElementById('newgame');
+      const modal = document.getElementById('modal');
+      const playerForm = document.getElementById('playerForm');
+      const p1input = document.getElementById('p1input');
+      const p2input = document.getElementById('p2input');
+      let p1 = '';
+      let p2 = '';
+      let states = Array(9).fill(0); // 0: blank, 1: X, 2: O
+      let gameOver = false;
+      let turn = 1; // 1: X, 2: O
+      let moves = 0;
+
+      function getSymbol(state) {
+        return state === 1 ? 'X' : state === 2 ? 'O' : '';
+      }
+
+      function getPlayerName(state) {
+        return state === 1 ? p1 : p2;
+      }
+
+      function checkWin() {
+        const winPatterns = [
+          [0,1,2], [3,4,5], [6,7,8], // rows
+          [0,3,6], [1,4,7], [2,5,8], // columns
+          [0,4,8], [2,4,6]           // diagonals
+        ];
+        for (const pattern of winPatterns) {
+          const [a, b, c] = pattern;
+          if (
+            states[a] !== 0 &&
+            states[a] === states[b] &&
+            states[a] === states[c]
+          ) {
+            return states[a]; // 1 for X, 2 for O
+          }
+        }
+        return 0;
+      }
+
+      function setGameOver(winner) {
+        gameOver = true;
+        cells.forEach(btn => btn.disabled = true);
+        if (winner === 'tie') {
+          winnerH1.textContent = 'its a tie';
+        } else {
+          winnerH1.textContent = `${getPlayerName(winner)} won`;
+        }
+        winnerH1.style.display = '';
+        restartBtn.style.display = 'block';
+        newGameBtn.style.display = 'block';
+      }
+
+      function updateTurnDisplay() {
+        if (gameOver) return;
+        winnerH1.textContent = `${getPlayerName(turn)}'s turn`;
+        winnerH1.style.display = '';
+      }
+
+      function resetGame() {
+        states = Array(9).fill(0);
+        cells.forEach(btn => {
+          btn.textContent = '';
+          btn.disabled = false;
+        });
+        gameOver = false;
+        turn = 1;
+        moves = 0;
+        updateTurnDisplay();
+        restartBtn.style.display = 'none';
+        newGameBtn.style.display = 'none';
+      }
+
+      function resetToInitialState() {
+        // Clear player names and show modal
+        p1 = '';
+        p2 = '';
+        p1input.value = '';
+        p2input.value = '';
+        modal.style.display = 'flex';
+        // Reset game board
+        states = Array(9).fill(0);
+        cells.forEach(btn => {
+          btn.textContent = '';
+          btn.disabled = false;
+        });
+        gameOver = false;
+        turn = 1;
+        moves = 0;
+        winnerH1.style.display = 'none';
+        restartBtn.style.display = 'none';
+        newGameBtn.style.display = 'none';
+      }
+
+      cells.forEach((btn, idx) => {
+        btn.addEventListener('click', function() {
+          if (gameOver) return;
+          if (states[idx] !== 0) return; // Only allow if blank
+          states[idx] = turn;
+          btn.textContent = getSymbol(turn);
+          moves++;
+          const winner = checkWin();
+          if (winner) {
+            setGameOver(winner);
+          } else if (states.every(s => s !== 0)) {
+            setGameOver('tie');
+          } else {
+            turn = turn === 1 ? 2 : 1;
+            updateTurnDisplay();
+          }
+        });
+      });
+
+      restartBtn.addEventListener('click', resetGame);
+      newGameBtn.addEventListener('click', resetToInitialState);
+
+      playerForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        p1 = p1input.value.trim() || 'Player 1';
+        p2 = p2input.value.trim() || 'Player 2';
+        modal.style.display = 'none';
+        updateTurnDisplay();
+      });
+    </script>
+</body>
+</html>
